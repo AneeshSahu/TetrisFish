@@ -20,21 +20,36 @@ class DisplayAbstraction():
         #self.counter = 0 # counts up to a second in ticks
         #self.lastframe = 0
 
-
+    def CheckLegality(self,direction):
+        start, end,step = 0,0,0
+        if direction == "Right":
+            start = self.shape[0] - 1
+            end = self.shape[0] * self.shape[1]
+            step = self.shape[0]
+        elif direction == "Left":
+            start = 0
+            end = self.shape[0] * self.shape[1]
+            step = self.shape[0]
+        elif direction == "Down":
+            start = 0
+            end = self.shape[0] * self.shape[1] - self.shape[0]
+            step = 1
+        for i in range(start, end, step):
+            if self.board[i] == 1:
+                print(f"This move is illegal")
+                return False
+        print("This move is legal")
+        return True
 
     def Keypress(self, event):
-        print(event['scancode'])
-        found = self.board.index(1)
-        if event == "<Down>" or event['scancode'] == 81 :  # Down
+        if event['scancode'] == 81 and self.CheckLegality("Down"):  # Down
             self.Move("Down")
-        elif event['scancode'] == 79:  # Right
-            #self.board[found + 1 ], self.board [found] = 1, 0
-            #self.canvas.move(self.objects, 50, 0)
+        elif event['scancode'] == 79 and self.CheckLegality("Right"):  # Right
             self.Move("Right")
-        elif event['scancode'] == 80:  # Left
-            #self.board[found - 1 ], self.board [found] = 1, 0
+        elif event['scancode'] == 80 and self.CheckLegality("Left"):  # Left
             self.Move("Left")
         elif event['scancode'] == 82:  # Up
+            found = self.board.index(1)
             self.board[found - self.shape[0] ], self.board [found] = 1, 0
 
     def Move(self, direction):
