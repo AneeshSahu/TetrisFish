@@ -266,16 +266,28 @@ class DisplayAbstraction():
             self.SpawnATetronome()
 
     def checkRows(self):
+        fullrows = []
         for i in range(self.shape[1] - 1, -1, -1):
             full = True
             for j in range(self.shape[0]):
                 if self.board[j + i * self.shape[0]] != 2:
                     full = False
             if full:
+                fullrows.append(i)
                 # print("Row " + str(i) + " is full")
-                self.score += 1
-                print(f"The score is {self.score}")
-                self.deleterow(i)
+        if len(fullrows) == 1:
+            self.score+=40
+        if len(fullrows) == 2:
+            self.score+=100
+        if len(fullrows) == 3:
+            self.score+=300
+        if len(fullrows) == 4:
+            self.score+=1200
+        if len(fullrows) != 0:
+            print(f'The score is {self.score}')
+        for i in fullrows:
+            self.deleterow(i)
+
 
     def deleterow(self, row):
         for row in range(row, 0, -1):
@@ -302,7 +314,7 @@ class DisplayAbstraction():
                     # print(time.time())
                 if counter == 5:
                     self.MoveCurrentBlockDown()
-                self.checkRows()
+                    self.checkRows()
                 self.draw()
                 # print(counter)
             pygame.display.flip()
