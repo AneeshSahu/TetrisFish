@@ -12,8 +12,9 @@ class DisplayAbstraction():
 
     def __init__(self):
         pygame.init()
+        pygame.font.init()
 
-        self.screen = pygame.display.set_mode((500, 1000))
+        self.screen = pygame.display.set_mode((800, 1000))
 
         self.shape = (10, 22)
         self.board = [0 for i in range(self.shape[0] * self.shape[1])]
@@ -25,8 +26,11 @@ class DisplayAbstraction():
         self.clock = pygame.time.Clock()
         self.tickrate = 100  # ms
         self.score = 0
+        self.swapped = False
+        self.hold = None
 
         self.SpawnATetronome()
+
 
         # self.counter = 0 # counts up to a second in ticks
         # self.lastframe = 0
@@ -73,6 +77,21 @@ class DisplayAbstraction():
             self.rotate()
         elif event['scancode'] == 44:  # Space
             self.moveToEnd()
+        elif event['scancode'] == 6 : # c
+            self.swap()
+
+    def swap(self):
+        if not self.swapped or True:
+            if self.hold == None :
+                self.hold = self.currentTetronome
+                self.board = [x if x != 1 else 0 for x in self.board]
+                self.SpawnATetronome()
+            else:
+                self.spawnBag.insert(0, self.hold)
+                self.hold = self.currentTetronome
+                self.board = [x if x != 1 else 0 for x in self.board]
+                self.SpawnATetronome()
+            self.swapped = True
 
     def moveToEnd(self):
         while self.CheckLegality("Down"):
@@ -258,12 +277,37 @@ class DisplayAbstraction():
                     colour = (255, 255, 255)
                 pygame.draw.rect(self.screen, colour, (x * 50, (y - 2) * 50, x * 50 + 50, (y - 2) * 50 + 50))
 
+                # hold
+        pygame.draw.rect(self.screen, (0, 0, 0), (500, 0, 800, 1000))
+        pygame.draw.rect(self.screen, (255, 255, 255), (550, 200, 200, 300))
+
+        myfont = pygame.font.SysFont("monospace", 20)
+        label = myfont.render("HOLD", 1, (0, 0, 0))
+        self.screen.blit(label, (625, 200))
+
+
+        if self.hold != None:
+            for i in self.tetronomeShape[self.hold]:
+                if self.hold == 5: # SPECIAL FOR LINE
+                    pygame.draw.rect(self.screen, (255, 0, 0), (550 + (50 * (i - 3)), 300, 50, 50))
+                elif i//10 == 0:
+                    pygame.draw.rect(self.screen, (255, 0, 0), (575 + (50*(i-4)), 300, 50, 50))
+                else:
+                    pygame.draw.rect(self.screen, (255, 0, 0), (575 + (50 * (i - 14)), 350, 50, 50))
+        label = myfont.render(f"SCORE : {self.score}", 1, (0,255,0))
+        self.screen.blit(label, (590, 100))
+
+
+
+
     def MoveCurrentBlockDown(self):
         if self.CheckLegality("Down"):
             self.Move("Down")
         else:
             self.board = [x if x != 1 else 2 for x in self.board]
+            self.checkRows()
             self.SpawnATetronome()
+            self.swapped = False
 
     def checkRows(self):
         fullrows = []
@@ -285,7 +329,7 @@ class DisplayAbstraction():
             self.score+=1200
         if len(fullrows) != 0:
             print(f'The score is {self.score}')
-        for i in fullrows:
+        for i in fullrows[::-1]:
             self.deleterow(i)
 
 
@@ -314,7 +358,6 @@ class DisplayAbstraction():
                     # print(time.time())
                 if counter == 5:
                     self.MoveCurrentBlockDown()
-                    self.checkRows()
                 self.draw()
                 # print(counter)
             pygame.display.flip()
