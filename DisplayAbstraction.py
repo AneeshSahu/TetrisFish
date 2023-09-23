@@ -1,16 +1,25 @@
 import random
 
 import pygame
-import time
+
+class subject:
+    def __init__(self):
+        self.observers = []
+    def register (self, observer):
+        self.observers.append(observer)
+    def notify(self):
+        for observer in self.observers:
+            observer.update()
 
 
-class DisplayAbstraction():
+class DisplayAbstraction(subject):
     tetronome = {0: "L", 1: "J", 2: "T", 3: "S", 4: "Z", 5: "I", 6: "O"}
     tetronomeShape = (
         (4, 5, 6, 14), (4, 5, 6, 16), (4, 5, 6, 15), (5, 6, 14, 15), (4, 5, 15, 16), (3, 4, 5, 6), (4, 5, 14, 15))
     spawnpoint = 3
 
     def __init__(self):
+        super().__init__()
         pygame.init()
         pygame.font.init()
 
@@ -28,9 +37,6 @@ class DisplayAbstraction():
         self.score = 0
         self.swapped = False
         self.hold = None
-
-        self.SpawnATetronome()
-
 
         # self.counter = 0 # counts up to a second in ticks
         # self.lastframe = 0
@@ -256,7 +262,6 @@ class DisplayAbstraction():
             self.spawnBag = [i for i in range(7)]
             self.spawnBag.append(random.randint(0,6))
             random.shuffle(self.spawnBag)
-
         self.currentTetronome = self.spawnBag.pop(0)
         self.currentOrientation = 0
         for i in self.tetronomeShape[self.currentTetronome]:
@@ -265,6 +270,8 @@ class DisplayAbstraction():
                 pygame.quit()
                 quit()
             self.board[i] = 1
+        print("Notify")
+        self.notify() # notify observer
 
     def draw(self):
         for x in range(self.shape[0]):
@@ -341,6 +348,7 @@ class DisplayAbstraction():
             self.board[column] = 0
 
     def run(self):
+        self.SpawnATetronome() # spawn first block
         counter = 0
         while (True):
             for event in pygame.event.get():
@@ -365,5 +373,8 @@ class DisplayAbstraction():
             self.clock.tick(self.tickrate)
 
 
-dis = DisplayAbstraction()
-dis.run()
+def main():
+    dis = DisplayAbstraction()
+    dis.run()
+if __name__ == "__main__":
+    main()
