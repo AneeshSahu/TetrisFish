@@ -75,6 +75,7 @@ class DisplayAbstraction(subject):
             step = 1
             move = shape[0]
         for i in range(start, end, step):
+            #print(i,start,end,step,shape)
             if board[i] == 1:
                 return False
         for i in range(0, shape[0] * shape[1]):
@@ -119,15 +120,20 @@ class DisplayAbstraction(subject):
             self.MoveCurrentBlockDown()
         self.MoveCurrentBlockDown()  # extra to take block from 1 to 2
     @staticmethod
-    def moveToEndAbsolute(board,shape):
+    def moveToEndAbsolute(board,shape,drop = False):
         board = copy.deepcopy(board) # deepcopy board. No mutators allowed
+        count = 0
         while DisplayAbstraction.CheckLegalityAbsolute(board,shape,"Down"):
             board = DisplayAbstraction.MoveAbsolute(board,"Down",shape)
+            count +=1
         board = [x if x != 1 else 2 for x in board]
+        if drop:
+            return board,count
         return board
 
 
     def Rotate(self, move=False):
+        #print(self.currentOrientation)
         ret , orientation, board = DisplayAbstraction.RotateAbsolute(self.board,self.currentTetronome,self.currentOrientation,self.shape)
         if move and ret:
             self.board = board
@@ -276,11 +282,17 @@ class DisplayAbstraction(subject):
 
 
     def Move(self, direction):
-        print(direction)
+        #print(direction)
         self.board = DisplayAbstraction.MoveAbsolute(self.board,direction,self.shape)
     @staticmethod
     def MoveAbsolute(board, direction,shape):
-        board = copy.deepcopy(board) # deepcopy board. No mutators allowed
+        board = [i for i in board] #copy.deepcopy(board) # deepcopy board. No mutators allowed
+
+        if not (DisplayAbstraction.CheckLegalityAbsolute(board,shape,direction)):
+            if direction == "Down":
+                board = [x if x != 1 else 2 for x in board]
+            return board
+
         if direction == "Down":
             for x in range(shape[0]):
                 for y in range(shape[1] - 1, -1, -1):
@@ -303,10 +315,11 @@ class DisplayAbstraction(subject):
             self.spawnBag.append(random.randint(0, 6))
             random.shuffle(self.spawnBag)
         self.currentTetronome = self.spawnBag.pop(0)
+        #print(f"Spanning {self.currentTetronome}")
         self.currentOrientation = 0
         for i in self.tetronomeShape[self.currentTetronome]:
             if self.board[i] == 2:
-                print("Game Over")
+                print(f"Game Over Score is : {self.score}")
                 pygame.quit()
                 quit()
             self.board[i] = 1
@@ -432,6 +445,8 @@ class DisplayAbstraction(subject):
             pygame.display.flip()
 
             self.clock.tick(self.tickrate)
+
+
 
 
 def main():
